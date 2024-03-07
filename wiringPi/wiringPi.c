@@ -46,6 +46,7 @@
 #include "odroidn2.h"
 #include "odroidc4.h"
 #include "odroidm1.h"
+#include "odroidm2.h"
 
 /*----------------------------------------------------------------------------*/
 // Const string define
@@ -65,6 +66,7 @@ const char *piModelNames [16] =
 	"ODROID-HC4",
 	"ODROID-M1",
 	"ODROID-M1S",
+	"ODROID-M2",
 };
 
 const char *piRevisionNames [16] =
@@ -540,6 +542,11 @@ int piGpioLayout (void) {
 			libwiring.rev = 1;
 			break;
 		case MODEL_ODROID_M1S:
+			libwiring.maker = MAKER_ROCKCHIP;
+			libwiring.mem = 5;
+			libwiring.rev = 1;
+			break;
+		case MODEL_ODROID_M2:
 			libwiring.maker = MAKER_ROCKCHIP;
 			libwiring.mem = 5;
 			libwiring.rev = 1;
@@ -1268,6 +1275,9 @@ int wiringPiSetup (void)
 	break;
 	case MODEL_ODROID_M1S:
 		init_odroidm1s(&libwiring);
+	break;
+	case MODEL_ODROID_M2:
+		init_odroidm2(&libwiring);
 	break;
 	default:
 		return wiringPiFailure (WPI_ALMOST,
