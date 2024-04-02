@@ -1,3 +1,10 @@
+odroid-wiringpi (3.16.3) stable; urgency=medium
+
+  * ODROID-M1/S: Improve functions
+  * Decided not to take gpiod together and deleted DEVMEM.
+
+ -- Steve Jeong <steve@how2flow.net>  Tue, 02 Apr 2024 03:34:43 +0000
+
 odroid-wiringpi (3.16.2) stable; urgency=medium
 
   * ODROID-M1/S: simplification of operations
