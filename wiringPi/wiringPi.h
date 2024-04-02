@@ -90,9 +90,9 @@
 #define	HIGH			1
 
 // Pull up/down/none
-#define	PUD_OFF			0
-#define	PUD_DOWN		1
-#define	PUD_UP			2
+#define	PUD_OFF			INPUT
+#define	PUD_DOWN		INPUT_PULLDOWN
+#define	PUD_UP			INPUT_PULLUP
 
 // Interrupt levels
 #define	INT_EDGE_SETUP		0

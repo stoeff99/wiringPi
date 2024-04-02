@@ -33,26 +33,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //setClkState mode
 #define M1_CLK_ENABLE	0
 #define M1_CLK_DISABLE	1
-#define M1_CLK_BYTE_ENABLE	2
-#define M1_CLK_BYTE_DISABLE	3
 
 #define M1_GRF_BLOCK_SIZE 0xFFFF
 #define GPIO_SIZE	32
 
 #define M1_FUNC_GPIO 0
-#define M1_FUNC_PWM 1
 
 // GPIO[0]
 #define M1_GPIO_0_BASE	0xFDD60000
 // to control clock (PMU_CRU)
 #define M1_PMU_CRU_BASE	0xFDD00000
-#define M1_PMU_CRU_GPIO_CLK_OFFSET	0x61 /* (0x184 >> 2) */
+#define M1_PMU_CRU_GPIO_CLK_OFFSET	(0x184 >> 2)
 #define M1_PMU_CRU_GPIO_PCLK_BIT	9
 // to control IOMUX
 #define M1_PMU_GRF_BASE	0xFDC20000
 #define M1_PMU_GRF_IOMUX_OFFSET	0x00
-#define M1_PMU_GRF_PUPD_OFFSET	0x08 /* (0x20 >> 2) */
-#define M1_PMU_GRF_DS_OFFSET	0x1C /* (0x70 >> 2) */
+#define M1_PMU_GRF_PUPD_OFFSET	(0x20 >> 2)
+#define M1_PMU_GRF_DS_OFFSET	(0x70 >> 2)
 
 // GPIO[1:4]
 #define M1_GPIO_1_BASE	0xFE740000
@@ -61,18 +58,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define M1_GPIO_4_BASE	0xFE770000
 // to control clock (SYS_CRU)
 #define M1_CRU_BASE	0xFDD20000
-#define M1_CRU_GPIO_CLK_OFFSET	0xDF /* (0x37c >> 2) */
+#define M1_CRU_GPIO_CLK_OFFSET	(0x37c >> 2)
 #define M1_CRU_GPIO_PCLK_BIT	2
 // to control IOMUX
 #define M1_SYS_GRF_BASE	0xFDC60000
 #define M1_SYS_GRF_IOMUX_OFFSET	0x00
-#define M1_SYS_GRF_PUPD_OFFSET	0x20 /* (0x80 >> 2) */
-#define M1_SYS_GRF_DS_OFFSET	0x80 /* (0x200) >> 2 */
+#define M1_SYS_GRF_PUPD_OFFSET	(0x80 >> 2)
+#define M1_SYS_GRF_DS_OFFSET	(0x200 >> 2)
 
 // Common offset for GPIO registers from each GPIO bank's base address
-#define M1_GPIO_DIR_OFFSET	0x02 /* (0x8) >> 2 */
+#define M1_GPIO_DIR_OFFSET	(0x8 >> 2)
 #define M1_GPIO_SET_OFFSET	0x00
-#define M1_GPIO_GET_OFFSET	0x1C /* (0x70 >> 2) */
+#define M1_GPIO_GET_OFFSET	(0x70 >> 2)
 
 // GPIO DS LEVELS
 #define DS_LEVEL_0	0x01 //0b000001
