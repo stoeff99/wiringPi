@@ -39,16 +39,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /*----------------------------------------------------------------------------*/
 #include "wiringPi.h"
 #include "odroidm1.h"
-
-#if !defined(DEVMEM)
-#include <gpiod.h>
-/*----------------------------------------------------------------------------*/
-// libgpiod define
-/*----------------------------------------------------------------------------*/
-static struct gpiod_chip *chip;
-static struct gpiod_line *gpiod;
-#endif
-
 /*----------------------------------------------------------------------------*/
 // wiringPi gpio map define
 /*----------------------------------------------------------------------------*/
@@ -229,18 +219,6 @@ static int		_digitalWriteByte	(const unsigned int value);
 static unsigned int	_digitalReadByte	(void);
 static void		_pwmSetRange	(unsigned int range);
 static void		_pwmSetClock	(int divisor);
-
-#if !defined(DEVMEM)
-/*----------------------------------------------------------------------------*/
-// libgpiod core function
-/*----------------------------------------------------------------------------*/
-static int		_pinMode_gpiod		(int pin, int mode);
-static int		_digitalRead_gpiod		(int pin);
-static int		_digitalWrite_gpiod		(int pin, int value);
-static int		_digitalWriteByte_gpiod	(const unsigned int value);
-static unsigned int	_digitalReadByte_gpiod	(void);
-#endif
-
 /*----------------------------------------------------------------------------*/
 // board init function
 /*----------------------------------------------------------------------------*/
@@ -402,7 +380,7 @@ static int _getModeToGpio (int mode, int pin)
 // set GPIO clock state
 //
 /*----------------------------------------------------------------------------*/
-__attribute__ ((unused))static void setClkState (int bank, int state)
+static void setClkState (int bank, int state)
 {
 	uint32_t data, regOffset;
 	uint8_t gpioPclkShift;
@@ -424,7 +402,7 @@ __attribute__ ((unused))static void setClkState (int bank, int state)
 // set IOMUX mode
 //
 /*----------------------------------------------------------------------------*/
-__attribute__ ((unused))static int setIomuxMode (int pin, int mode)
+static int setIomuxMode (int pin, int mode)
 {
 	uint32_t data, regOffset;
 	uint8_t	bank, group, bankOffset, groupOffset;
@@ -461,7 +439,7 @@ __attribute__ ((unused))static int setIomuxMode (int pin, int mode)
 	return 0;
 }
 /*----------------------------------------------------------------------------*/
-__attribute__ ((unused))static int _pinMode (int pin, int mode)
+static int _pinMode (int pin, int mode)
 {
 	uint32_t data, regOffset;
 	uint8_t bank, bankOffset;
@@ -517,79 +495,8 @@ __attribute__ ((unused))static int _pinMode (int pin, int mode)
 
 	return 0;
 }
-
-#if !defined(DEVMEM)
 /*----------------------------------------------------------------------------*/
-__attribute__ ((unused))static int _pinMode_gpiod (int pin, int mode)
-{
-	uint8_t bank, bankOffset;
-	int origPin, ret;
-
-	origPin = pin;
-
-	if (lib->mode == MODE_GPIO_SYS)
-		return -1;
-
-	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
-		return -1;
-
-	bank = (pin / GPIO_SIZE);
-	bankOffset = (pin - (bank * GPIO_SIZE));
-
-	pwmRelease(origPin);
-	softPwmStop(origPin);
-	softToneStop(origPin);
-
-	chip = gpiod_chip_open_by_number(bank);
-	if (!chip) {
-		return -1;
-	}
-
-	gpiod = gpiod_chip_get_line(chip, bankOffset);
-	if (!gpiod) {
-		printf("gpio get error\n");
-		gpiod_chip_close(chip);
-		return -1;
-	}
-
-	switch (mode) {
-	case INPUT:
-	case INPUT_PULLUP:
-	case INPUT_PULLDOWN:
-		ret = gpiod_line_request_input(gpiod, CONSUMER);
-		if (ret < 0) {
-			printf("gpiod request error\n");
-			gpiod_line_release(gpiod);
-		}
-		_pullUpDnControl(origPin, mode);
-		break;
-	case OUTPUT:
-		ret = gpiod_line_request_output(gpiod, CONSUMER, 0);
-		if (ret < 0) {
-			printf("gpiod request error\n");
-			gpiod_line_release(gpiod);
-		}
-		break;
-	case SOFT_PWM_OUTPUT:
-		softPwmCreate(origPin, 0, 100);
-		break;
-	case SOFT_TONE_OUTPUT:
-		softToneCreate(origPin);
-		break;
-	default:
-		msg(MSG_WARN, "%s : Unknown Mode %d\n", __func__, mode);
-		return -1;
-	}
-
-	gpiod_line_release(gpiod);
-	gpiod_chip_close(chip);
-
-	return 0;
-}
-#endif
-
-/*----------------------------------------------------------------------------*/
-__attribute__ ((unused))static int _getDrive(int pin)
+static int _getDrive(int pin)
 {
 	uint32_t data, regOffset;
 	uint8_t bank, group, bankOffset, groupOffset;
@@ -643,7 +550,7 @@ __attribute__ ((unused))static int _getDrive(int pin)
 	return value;
 }
 /*----------------------------------------------------------------------------*/
-__attribute__ ((unused))static int _setDrive(int pin, int value)
+static int _setDrive(int pin, int value)
 {
 	uint32_t data, regOffset;
 	uint8_t bank, group, bankOffset, groupOffset;
@@ -697,7 +604,7 @@ __attribute__ ((unused))static int _setDrive(int pin, int value)
 	return 0;
 }
 /*----------------------------------------------------------------------------*/
-__attribute__ ((unused))static int _getAlt (int pin)
+static int _getAlt (int pin)
 {
 	// TODO: Working confirmed
 	uint32_t regOffset;
@@ -747,7 +654,7 @@ __attribute__ ((unused))static int _getAlt (int pin)
 	return ret;
 }
 /*----------------------------------------------------------------------------*/
-__attribute__ ((unused))static int _getPUPD (int pin)
+static int _getPUPD (int pin)
 {
 	uint32_t regOffset, pupd;
 	uint8_t bank, group, bankOffset, groupOffset;
@@ -775,7 +682,7 @@ __attribute__ ((unused))static int _getPUPD (int pin)
 	return pupd;
 }
 /*----------------------------------------------------------------------------*/
-__attribute__ ((unused))static int _pullUpDnControl (int pin, int pud)
+static int _pullUpDnControl (int pin, int pud)
 {
 	uint32_t data, regOffset;
 	uint8_t	bank, group, bankOffset, groupOffset;
@@ -818,7 +725,7 @@ __attribute__ ((unused))static int _pullUpDnControl (int pin, int pud)
 	return 0;
 }
 /*----------------------------------------------------------------------------*/
-__attribute__ ((unused))static int _digitalRead (int pin)
+static int _digitalRead (int pin)
 {
 	uint8_t bank;
 	int ret;
@@ -846,59 +753,8 @@ __attribute__ ((unused))static int _digitalRead (int pin)
 
 	return ret;
 }
-
-#if !defined(DEVMEM)
 /*----------------------------------------------------------------------------*/
-__attribute__ ((unused))static int _digitalRead_gpiod (int pin)
-{
-	uint8_t bank, bankOffset;
-	int ret;
-	char c;
-
-	if (lib->mode == MODE_GPIO_SYS) {
-		if (lib->sysFds[pin] == -1)
-			return -1;
-
-		lseek(lib->sysFds[pin], 0L, SEEK_SET);
-		if (read(lib->sysFds[pin], &c, 1) < 0) {
-			msg(MSG_WARN, "%s: Failed with reading from sysfs GPIO node. \n", __func__);
-			return -1;
-		}
-
-		return (c == '0') ? LOW : HIGH;
-	}
-
-	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
-		return	-1;
-
-	bank = (pin / GPIO_SIZE);
-	bankOffset = (pin - (bank * GPIO_SIZE));
-
-	chip = gpiod_chip_open_by_number(bank);
-	if (!chip) {
-		printf("chip open error\n");
-		return -1;
-	}
-	gpiod = gpiod_chip_get_line(chip,bankOffset);
-	if (!gpiod) {
-		printf("gpiod get error\n");
-		gpiod_chip_close(chip);
-	}
-	ret = gpiod_line_get_value(gpiod);
-	if (ret < 0) {
-		printf("gpiod get error\n");
-		gpiod_line_release(gpiod);
-	}
-
-	gpiod_line_release(gpiod);
-	gpiod_chip_close(chip);
-
-	return ret;
-}
-#endif
-
-/*----------------------------------------------------------------------------*/
-__attribute__ ((unused))static int _digitalWrite (int pin, int value)
+static int _digitalWrite (int pin, int value)
 {
 	uint32_t data, regOffset;
 	uint8_t bank, bankOffset;
@@ -935,76 +791,8 @@ __attribute__ ((unused))static int _digitalWrite (int pin, int value)
 
 	return 0;
 }
-
-#if !defined(DEVMEM)
 /*----------------------------------------------------------------------------*/
-__attribute__ ((unused))static int _digitalWrite_gpiod (int pin, int value)
-{
-	uint8_t bank,bankOffset;
-	int ret;
-
-	if (lib->mode == MODE_GPIO_SYS) {
-		if (lib->sysFds[pin] != -1) {
-			if (value == LOW) {
-				if (write (lib->sysFds[pin], "0\n", 2) < 0)
-					msg(MSG_ERR,
-					"%s : %s\nEdit direction file to output mode for\n\t/sys/class/gpio/gpio%d/direction\n",
-					__func__, strerror(errno), pin + M1_GPIO_PIN_BASE);
-			} else {
-				if (write (lib->sysFds[pin], "1\n", 2) < 0)
-					msg(MSG_ERR,
-					"%s : %s\nEdit direction file to output mode for\n\t/sys/class/gpio/gpio%d/direction\n",
-					__func__, strerror(errno), pin + M1_GPIO_PIN_BASE);
-			}
-		}
-		return -1;
-	}
-
-	if ((pin = _getModeToGpio(lib->mode, pin)) < 0)
-		return -1;
-
-	bank = (pin / GPIO_SIZE);
-	bankOffset = (pin - (bank * GPIO_SIZE));
-
-	chip = gpiod_chip_open_by_number(bank);
-	if (!chip) {
-		printf("chip open error\n");
-		return -1;
-	}
-
-	gpiod = gpiod_chip_get_line(chip, bankOffset);
-	if (!gpiod) {
-		printf("gpiod get error\n");
-		gpiod_chip_close(chip);
-	}
-
-	switch (value) {
-	case LOW:
-		ret = gpiod_line_set_value(gpiod, 0);
-		if (ret < 0) {
-			printf("gpiod set error\n");
-			gpiod_line_release(gpiod);
-		}
-		break;
-	case HIGH:
-		ret = gpiod_line_set_value(gpiod, 1);
-		if (ret < 0) {
-			printf("gpiod set error\n");
-			gpiod_line_release(gpiod);
-		}
-		break;
-	default:
-		break;
-	}
-
-	gpiod_line_release(gpiod);
-	gpiod_chip_close(chip);
-
-	return 0;
-}
-#endif
-
-__attribute__ ((unused))static int _pwmWrite (int pin, int value)
+static int _pwmWrite (int pin, int value)
 {
 	unsigned int duty;
 	int pwmPin;
@@ -1068,7 +856,7 @@ static int _analogRead (int pin)
 	return	atoi(value);
 }
 /*----------------------------------------------------------------------------*/
-__attribute__ ((unused))static int _digitalWriteByte (const unsigned int value)
+static int _digitalWriteByte (const unsigned int value)
 {
 	union reg_bitfield gpio0;
 	union reg_bitfield gpio3;
@@ -1110,74 +898,8 @@ __attribute__ ((unused))static int _digitalWriteByte (const unsigned int value)
 
 	return 0;
 }
-
-#if !defined(DEVMEM)
 /*----------------------------------------------------------------------------*/
-__attribute__ ((unused))static int _digitalWriteByte_gpiod (const unsigned int value)
-{
-	static struct gpiod_chip *chip[2];
-	static struct gpiod_line *gpiodLines[8];
-
-	uint32_t unit=0x0;
-	int ret;
-
-	if (lib->mode == MODE_GPIO_SYS) {
-		return -1;
-	}
-
-	chip[0] = gpiod_chip_open_by_number(0);
-	chip[1] = gpiod_chip_open_by_number(3);
-
-	//gpiod get lines
-	/* Wiring PI GPIO0 = M1 GPIO0_C.0 */
-	gpiodLines[0] = gpiod_chip_get_line(chip[0], 16);
-	/* Wiring PI GPIO1 = M1 GPIO3_D.0 */
-	gpiodLines[1] = gpiod_chip_get_line(chip[1], 24);
-	/* Wiring PI GPIO2 = M1 GPIO0_C.1 */
-	gpiodLines[2] = gpiod_chip_get_line(chip[0], 17);
-	/* Wiring PI GPIO3 = M1 GPIO3_B.2 */
-	gpiodLines[3] = gpiod_chip_get_line(chip[1], 10);
-	/* Wiring PI GPIO4 = M1 GPIO3_C.6 */
-	gpiodLines[4] = gpiod_chip_get_line(chip[1], 22);
-	/* Wiring PI GPIO5 = M1 GPIO3_C.7 */
-	gpiodLines[5] = gpiod_chip_get_line(chip[1], 23);
-	/* Wiring PI GPIO6 = M1 GPIO3_D.1 */
-	gpiodLines[6] = gpiod_chip_get_line(chip[1], 25);
-	/* Wiring PI GPIO7 = M1 GPIO0_B.6 */
-	gpiodLines[7] = gpiod_chip_get_line(chip[0], 14);
-	for (int i = 0; i < 8; i++) {
-		if (!gpiodLines[i]) {
-			printf("gpiod get error pin:%d\n",i);
-			for (int j = 0; j < 2; j++)
-				gpiod_chip_close(chip[j]);
-		}
-	}
-
-	for (int i = 0; i < 8; i++) {
-		unit = (1 << i);
-		ret = gpiod_line_request_output(gpiodLines[i],CONSUMER,0);
-		if (ret < 0) {
-			printf("gpiod request error pin:%d\n" , i);
-			gpiod_line_release(gpiodLines[i]);
-		}
-		ret = gpiod_line_set_value(gpiodLines[i],((value & unit) >> i));
-		if (ret < 0) {
-			printf("gpiod set error pin:%d\n" , i);
-			gpiod_line_release(gpiodLines[i]);
-		}
-	}
-
-	for (int i = 0; i < 8; i++)
-		gpiod_line_release(gpiodLines[i]);
-	for (int i = 0; i < 2; i++)
-		gpiod_chip_close(chip[i]);
-
-	return 0;
-}
-#endif
-
-/*----------------------------------------------------------------------------*/
-__attribute__ ((unused))static unsigned int _digitalReadByte (void)
+static unsigned int _digitalReadByte (void)
 {
 	union reg_bitfield gpio0;
 	union reg_bitfield gpio3;
@@ -1222,71 +944,6 @@ __attribute__ ((unused))static unsigned int _digitalReadByte (void)
 
 	return value;
 }
-
-#if !defined(DEVMEM)
-/*----------------------------------------------------------------------------*/
-__attribute__ ((unused))static unsigned int _digitalReadByte_gpiod (void)
-{
-	static struct gpiod_chip *chip[2];
-	static struct gpiod_line *gpiodLines[8];
-
-	unsigned int value = 0;
-	uint32_t unit = 0x0;
-	int ret;
-
-	if (lib->mode == MODE_GPIO_SYS) {
-		return -1;
-	}
-
-	chip[0] = gpiod_chip_open_by_number(0);
-	chip[1] = gpiod_chip_open_by_number(3);
-
-	//gpiod get lines
-	/* Wiring PI GPIO0 = M1 GPIO0_C.0 */
-	gpiodLines[0] = gpiod_chip_get_line(chip[0], 16);
-	/* Wiring PI GPIO1 = M1 GPIO3_D.0 */
-	gpiodLines[1] = gpiod_chip_get_line(chip[1], 24);
-	/* Wiring PI GPIO2 = M1 GPIO0_C.1 */
-	gpiodLines[2] = gpiod_chip_get_line(chip[0], 17);
-	/* Wiring PI GPIO3 = M1 GPIO3_B.2 */
-	gpiodLines[3] = gpiod_chip_get_line(chip[1], 10);
-	/* Wiring PI GPIO4 = M1 GPIO3_C.6 */
-	gpiodLines[4] = gpiod_chip_get_line(chip[1], 22);
-	/* Wiring PI GPIO5 = M1 GPIO3_C.7 */
-	gpiodLines[5] = gpiod_chip_get_line(chip[1], 23);
-	/* Wiring PI GPIO6 = M1 GPIO3_D.1 */
-	gpiodLines[6] = gpiod_chip_get_line(chip[1], 25);
-	/* Wiring PI GPIO7 = M1 GPIO0_B.6 */
-	gpiodLines[7] = gpiod_chip_get_line(chip[0], 14);
-	for (int i = 0; i < 8; i++) {
-		if (!gpiodLines[i]) {
-			printf("gpiod get error pin:%d\n",i);
-			for (int j = 0; j < 2; j++)
-				gpiod_chip_close(chip[j]);
-		}
-	}
-
-	for (int i = 0; i < 8; i++) {
-		unit = (1 << i);
-		ret = gpiod_line_request_input(gpiodLines[i],CONSUMER);
-		if (ret < 0) {
-			printf("gpiod request error pin:%d\n",i);
-			gpiod_line_release(gpiodLines[i]);
-		}
-		ret = gpiod_line_get_value(gpiodLines[i]);
-		if (ret)
-			value |= unit;
-	}
-
-	for (int i = 0; i < 8; i++)
-		gpiod_line_release(gpiodLines[i]);
-	for (int i = 0; i < 2; i++)
-		gpiod_chip_close(chip[i]);
-
-	return value;
-}
-#endif
-
 /*----------------------------------------------------------------------------*/
 // PWM signal ___-----------___________---------------_______-----_
 //               <--value-->           <----value---->
@@ -1328,7 +985,6 @@ static void _pwmSetRange (unsigned int range)
 		inputToSysNode(setupedPwmPinPath[i], "enable", "1");
 	}
 }
-
 /*----------------------------------------------------------------------------*/
 // Internal clock: PWM0: 12MHz PWM2: 24MHz
 // PWM clock == (Internal clock) / divisor
@@ -1343,7 +999,6 @@ static void _pwmSetClock (int divisor)
 		return;
 	}
 }
-
 /*----------------------------------------------------------------------------*/
 static void init_gpio_mmap (void)
 {
@@ -1431,7 +1086,7 @@ void init_odroidm1 (struct libodroid *libwiring)
 	init_gpio_mmap();
 
 	init_adc_fds();
-#if defined(DEVMEM)
+
 	/* wiringPi Core function initialize */
 	libwiring->getModeToGpio	= _getModeToGpio;
 	libwiring->pinMode		= _pinMode;
@@ -1448,21 +1103,7 @@ void init_odroidm1 (struct libodroid *libwiring)
 	libwiring->pwmWrite			= _pwmWrite;
 	libwiring->pwmSetRange		= _pwmSetRange;
 	libwiring->pwmSetClock		= _pwmSetClock;
-#else
-	/* wiringPi-libgpiod Core function initialize */
-	libwiring->getModeToGpio	= _getModeToGpio;
-	libwiring->pinMode		= _pinMode_gpiod;
-	libwiring->getAlt		= _getAlt;
-	libwiring->getPUPD		= _getPUPD;
-	libwiring->pullUpDnControl	= _pullUpDnControl;
-	libwiring->getDrive			= _getDrive;
-	libwiring->setDrive			= _setDrive;
-	libwiring->digitalRead		= _digitalRead_gpiod;
-	libwiring->digitalWrite		= _digitalWrite_gpiod;
-	libwiring->analogRead		= _analogRead;
-	libwiring->digitalWriteByte	= _digitalWriteByte_gpiod;
-	libwiring->digitalReadByte	= _digitalReadByte_gpiod;
-#endif
+
 	/* specify pin base number */
 	libwiring->pinBase		= M1_GPIO_PIN_BASE;
 
