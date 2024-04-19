@@ -524,22 +524,22 @@ static int _getDrive(int pin)
 	data = (groupOffset % 2 == 0 ? data & 0x3f : data >> 8);
 
 	switch (data) {
-		case DS_LEVEL_0:
+		case M1_DS_LEVEL_0:
 			value = 0;
 			break;
-		case DS_LEVEL_1:
+		case M1_DS_LEVEL_1:
 			value = 1;
 			break;
-		case DS_LEVEL_2:
+		case M1_DS_LEVEL_2:
 			value = 2;
 			break;
-		case DS_LEVEL_3:
+		case M1_DS_LEVEL_3:
 			value = 3;
 			break;
-		case DS_LEVEL_4:
+		case M1_DS_LEVEL_4:
 			value = 4;
 			break;
-		case DS_LEVEL_5:
+		case M1_DS_LEVEL_5:
 			value = 5;
 			break;
 		default:
@@ -578,22 +578,22 @@ static int _setDrive(int pin, int value)
 
 	switch (value) {
 		case 0:
-			data |= (groupOffset % 2 == 0 ? DS_LEVEL_0 : (DS_LEVEL_0 << 8));
+			data |= (groupOffset % 2 == 0 ? M1_DS_LEVEL_0 : (M1_DS_LEVEL_0 << 8));
 			break;
 		case 1:
-			data |= (groupOffset % 2 == 0 ? DS_LEVEL_1 : (DS_LEVEL_1 << 8));
+			data |= (groupOffset % 2 == 0 ? M1_DS_LEVEL_1 : (M1_DS_LEVEL_1 << 8));
 			break;
 		case 2:
-			data |= (groupOffset % 2 == 0 ? DS_LEVEL_2 : (DS_LEVEL_2 << 8));
+			data |= (groupOffset % 2 == 0 ? M1_DS_LEVEL_2 : (M1_DS_LEVEL_2 << 8));
 			break;
 		case 3:
-			data |= (groupOffset % 2 == 0 ? DS_LEVEL_3 : (DS_LEVEL_3 << 8));
+			data |= (groupOffset % 2 == 0 ? M1_DS_LEVEL_3 : (M1_DS_LEVEL_3 << 8));
 			break;
 		case 4:
-			data |= (groupOffset % 2 == 0 ? DS_LEVEL_4 : (DS_LEVEL_4 << 8));
+			data |= (groupOffset % 2 == 0 ? M1_DS_LEVEL_4 : (M1_DS_LEVEL_4 << 8));
 			break;
 		case 5:
-			data |= (groupOffset % 2 == 0 ? DS_LEVEL_5 : (DS_LEVEL_5 << 8));
+			data |= (groupOffset % 2 == 0 ? M1_DS_LEVEL_5 : (M1_DS_LEVEL_5 << 8));
 			break;
 		default:
 			break;
@@ -890,11 +890,11 @@ static int _digitalWriteByte (const unsigned int value)
 	gpio0.bits.bit14 = ((value & 0x80) >> 7);
 
 	/* Update data register */
-	*(gpio[0] + (M1_GPIO_SET_OFFSET + 0x1)) = (WRITE_BYTE_MASK_GPIO0_H | (gpio0.wvalue >> 16));
-	*(gpio[0] + M1_GPIO_SET_OFFSET) = (WRITE_BYTE_MASK_GPIO0_L | (gpio0.wvalue & 0xffff));
+	*(gpio[0] + (M1_GPIO_SET_OFFSET + 0x1)) = (M1_WRITE_BYTE_MASK_GPIO0_H | (gpio0.wvalue >> 16));
+	*(gpio[0] + M1_GPIO_SET_OFFSET) = (M1_WRITE_BYTE_MASK_GPIO0_L | (gpio0.wvalue & 0xffff));
 
-	*(gpio[3] + (M1_GPIO_SET_OFFSET + 0x1)) = (WRITE_BYTE_MASK_GPIO3_H | (gpio3.wvalue >> 16));
-	*(gpio[3] + M1_GPIO_SET_OFFSET) = (WRITE_BYTE_MASK_GPIO3_L | (gpio3.wvalue & 0xffff));
+	*(gpio[3] + (M1_GPIO_SET_OFFSET + 0x1)) = (M1_WRITE_BYTE_MASK_GPIO3_H | (gpio3.wvalue >> 16));
+	*(gpio[3] + M1_GPIO_SET_OFFSET) = (M1_WRITE_BYTE_MASK_GPIO3_L | (gpio3.wvalue & 0xffff));
 
 	return 0;
 }

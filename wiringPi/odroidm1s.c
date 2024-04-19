@@ -526,22 +526,22 @@ static int _getDrive(int pin)
 	data = (groupOffset % 2 == 0 ? data & 0x3f : data >> 8);
 
 	switch (data) {
-		case DS_LEVEL_0:
+		case M1_DS_LEVEL_0:
 			value = 0;
 			break;
-		case DS_LEVEL_1:
+		case M1_DS_LEVEL_1:
 			value = 1;
 			break;
-		case DS_LEVEL_2:
+		case M1_DS_LEVEL_2:
 			value = 2;
 			break;
-		case DS_LEVEL_3:
+		case M1_DS_LEVEL_3:
 			value = 3;
 			break;
-		case DS_LEVEL_4:
+		case M1_DS_LEVEL_4:
 			value = 4;
 			break;
-		case DS_LEVEL_5:
+		case M1_DS_LEVEL_5:
 			value = 5;
 			break;
 		default:
@@ -580,22 +580,22 @@ static int _setDrive(int pin, int value)
 
 	switch (value) {
 		case 0:
-			data |= (groupOffset % 2 == 0 ? DS_LEVEL_0 : (DS_LEVEL_0 << 8));
+			data |= (groupOffset % 2 == 0 ? M1_DS_LEVEL_0 : (M1_DS_LEVEL_0 << 8));
 			break;
 		case 1:
-			data |= (groupOffset % 2 == 0 ? DS_LEVEL_1 : (DS_LEVEL_1 << 8));
+			data |= (groupOffset % 2 == 0 ? M1_DS_LEVEL_1 : (M1_DS_LEVEL_1 << 8));
 			break;
 		case 2:
-			data |= (groupOffset % 2 == 0 ? DS_LEVEL_2 : (DS_LEVEL_2 << 8));
+			data |= (groupOffset % 2 == 0 ? M1_DS_LEVEL_2 : (M1_DS_LEVEL_2 << 8));
 			break;
 		case 3:
-			data |= (groupOffset % 2 == 0 ? DS_LEVEL_3 : (DS_LEVEL_3 << 8));
+			data |= (groupOffset % 2 == 0 ? M1_DS_LEVEL_3 : (M1_DS_LEVEL_3 << 8));
 			break;
 		case 4:
-			data |= (groupOffset % 2 == 0 ? DS_LEVEL_4 : (DS_LEVEL_4 << 8));
+			data |= (groupOffset % 2 == 0 ? M1_DS_LEVEL_4 : (M1_DS_LEVEL_4 << 8));
 			break;
 		case 5:
-			data |= (groupOffset % 2 == 0 ? DS_LEVEL_5 : (DS_LEVEL_5 << 8));
+			data |= (groupOffset % 2 == 0 ? M1_DS_LEVEL_5 : (M1_DS_LEVEL_5 << 8));
 			break;
 		default:
 			break;
@@ -861,42 +861,41 @@ static int _analogRead (int pin)
 static int _digitalWriteByte (const unsigned int value)
 {
 	union reg_bitfield gpio0;
-	union reg_bitfield gpio3;
+	union reg_bitfield gpio2;
 
 	if (lib->mode == MODE_GPIO_SYS) {
 		return -1;
 	}
 
 	setClkState(GPIO_SIZE * 0, M1_CLK_ENABLE);
-	setClkState(GPIO_SIZE * 3, M1_CLK_ENABLE);
+	setClkState(GPIO_SIZE * 2, M1_CLK_ENABLE);
 
 	/* Read data register */
 	gpio0.wvalue = *(gpio[0] + M1_GPIO_GET_OFFSET);
-	gpio3.wvalue = *(gpio[3] + M1_GPIO_GET_OFFSET);
+	gpio2.wvalue = *(gpio[2] + M1_GPIO_GET_OFFSET);
 
-	/* Wiring PI GPIO0 = M1 GPIO0_C.0 */
+	/* Wiring PI GPIO0 = M1S GPIO0_C.0 */
 	gpio0.bits.bit16 = ((value & 0x01) >> 0);
-	/* Wiring PI GPIO1 = M1 GPIO3_D.0 */
-	gpio3.bits.bit24 = ((value & 0x02) >> 1);
-	/* Wiring PI GPIO2 = M1 GPIO0_C.1 */
+	/* Wiring PI GPIO1 = M1S GPIO2_A.7 */
+	gpio2.bits.bit7 = ((value & 0x02) >> 1);
+	/* Wiring PI GPIO2 = M1S GPIO0_C.1 */
 	gpio0.bits.bit17 = ((value & 0x04) >> 2);
-	/* Wiring PI GPIO3 = M1 GPIO3_B.2 */
-	gpio3.bits.bit10 = ((value & 0x08) >> 3);
-	/* Wiring PI GPIO4 = M1 GPIO3_C.6 */
-	gpio3.bits.bit22 = ((value & 0x10) >> 4);
-	/* Wiring PI GPIO5 = M1 GPIO3_C.7 */
-	gpio3.bits.bit23 = ((value & 0x20) >> 5);
-	/* Wiring PI GPIO6 = M1 GPIO3_D.1 */
-	gpio3.bits.bit25 = ((value & 0x40) >> 6);
-	/* Wiring PI GPIO7 = M1 GPIO0_B.6 */
+	/* Wiring PI GPIO3 = M1S GPIO0_C.2 */
+	gpio0.bits.bit18 = ((value & 0x08) >> 3);
+	/* Wiring PI GPIO4 = M1S GPIO2_B.5 */
+	gpio2.bits.bit13 = ((value & 0x10) >> 4);
+	/* Wiring PI GPIO5 = M1S GPIO2_B.6 */
+	gpio2.bits.bit14 = ((value & 0x20) >> 5);
+	/* Wiring PI GPIO6 = M1S GPIO2_B.0 */
+	gpio2.bits.bit8 = ((value & 0x40) >> 6);
+	/* Wiring PI GPIO7 = M1S GPIO0_B.6 */
 	gpio0.bits.bit14 = ((value & 0x80) >> 7);
 
 	/* Update data register */
-	*(gpio[0] + (M1_GPIO_SET_OFFSET + 0x1)) = (WRITE_BYTE_MASK_GPIO0_H | (gpio0.wvalue >> 16));
-	*(gpio[0] + M1_GPIO_SET_OFFSET) = (WRITE_BYTE_MASK_GPIO0_L | (gpio0.wvalue & 0xffff));
+	*(gpio[0] + (M1_GPIO_SET_OFFSET + 0x1)) = (M1_WRITE_BYTE_MASK_GPIO0_H | (gpio0.wvalue >> 16));
+	*(gpio[0] + M1_GPIO_SET_OFFSET) = (M1_WRITE_BYTE_MASK_GPIO0_L | (gpio0.wvalue & 0xffff));
 
-	*(gpio[3] + (M1_GPIO_SET_OFFSET + 0x1)) = (WRITE_BYTE_MASK_GPIO3_H | (gpio3.wvalue >> 16));
-	*(gpio[3] + M1_GPIO_SET_OFFSET) = (WRITE_BYTE_MASK_GPIO3_L | (gpio3.wvalue & 0xffff));
+	*(gpio[2] + M1_GPIO_SET_OFFSET) = (M1_WRITE_BYTE_MASK_GPIO2_L | (gpio2.wvalue & 0xffff));
 
 	return 0;
 }
@@ -904,7 +903,7 @@ static int _digitalWriteByte (const unsigned int value)
 static unsigned int _digitalReadByte (void)
 {
 	union reg_bitfield gpio0;
-	union reg_bitfield gpio3;
+	union reg_bitfield gpio2;
 
 	unsigned int value = 0;
 
@@ -913,34 +912,35 @@ static unsigned int _digitalReadByte (void)
 	}
 
 	setClkState(GPIO_SIZE * 0, M1_CLK_ENABLE);
-	setClkState(GPIO_SIZE * 3, M1_CLK_ENABLE);
+	setClkState(GPIO_SIZE * 2, M1_CLK_ENABLE);
 
 	/* Read data register */
 	gpio0.wvalue = *(gpio[0] + M1_GPIO_GET_OFFSET);
-	gpio3.wvalue = *(gpio[3] + M1_GPIO_GET_OFFSET);
+	gpio2.wvalue = *(gpio[2] + M1_GPIO_GET_OFFSET);
 
-	/* Wiring PI GPIO0 = M1 GPIO0_C.0 */
+
+	/* Wiring PI GPIO0 = M1S GPIO0_C.0 */
 	if (gpio0.bits.bit16)
 		value |= 0x01;
-	/* Wiring PI GPIO1 = M1 GPIO3_D.0 */
-	if (gpio3.bits.bit24)
+	/* Wiring PI GPIO1 = M1S GPIO2_A.7 */
+	if (gpio2.bits.bit7)
 		value |= 0x02;
-	/* Wiring PI GPIO2 = M1 GPIO0_C.1 */
+	/* Wiring PI GPIO2 = M1S GPIO0_C.1 */
 	if (gpio0.bits.bit17)
 		value |= 0x04;
-	/* Wiring PI GPIO3 = M1 GPIO3_B.2 */
-	if (gpio3.bits.bit10)
+	/* Wiring PI GPIO3 = M1S GPIO0_C.2 */
+	if (gpio0.bits.bit18)
 		value |= 0x08;
-	/* Wiring PI GPIO4 = M1 GPIO3_C.6 */
-	if (gpio3.bits.bit22)
+	/* Wiring PI GPIO4 = M1S GPIO2_B.5 */
+	if (gpio2.bits.bit13)
 		value |= 0x10;
-	/* Wiring PI GPIO5 = M1 GPIO3_C.7 */
-	if (gpio3.bits.bit23)
+	/* Wiring PI GPIO5 = M1S GPIO2_B.6 */
+	if (gpio2.bits.bit14)
 		value |= 0x20;
-	/* Wiring PI GPIO6 = M1 GPIO3_D.1 */
-	if (gpio3.bits.bit25)
+	/* Wiring PI GPIO6 = M1S GPIO2_B.0 */
+	if (gpio2.bits.bit8)
 		value |= 0x40;
-	/* Wiring PI GPIO7 = M1 GPIO0_B.6 */
+	/* Wiring PI GPIO7 = M1S GPIO0_B.6 */
 	if (gpio0.bits.bit14)
 		value |= 0x80;
 

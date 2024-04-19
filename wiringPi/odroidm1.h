@@ -70,18 +70,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define M1_GPIO_GET_OFFSET	(0x70 >> 2)
 
 // GPIO DS LEVELS
-#define DS_LEVEL_0	0x01 //0b000001
-#define DS_LEVEL_1	0x03 //0b000011
-#define DS_LEVEL_2	0x07 //0b000111
-#define DS_LEVEL_3	0x0f //0b001111
-#define DS_LEVEL_4	0x1f //0b011111
-#define DS_LEVEL_5	0x3f //0b111111
+#define M1_DS_LEVEL_0	0x01 //0b000001
+#define M1_DS_LEVEL_1	0x03 //0b000011
+#define M1_DS_LEVEL_2	0x07 //0b000111
+#define M1_DS_LEVEL_3	0x0f //0b001111
+#define M1_DS_LEVEL_4	0x1f //0b011111
+#define M1_DS_LEVEL_5	0x3f //0b111111
 
 // GPIO write mask for WriteByte
-#define WRITE_BYTE_MASK_GPIO0_H	0x00030000
-#define WRITE_BYTE_MASK_GPIO0_L	0x40000000
-#define WRITE_BYTE_MASK_GPIO3_H	0x03C00000
-#define WRITE_BYTE_MASK_GPIO3_L	0x04000000
+#define M1_WRITE_BYTE_MASK_GPIO0_H	0x00070000
+#define M1_WRITE_BYTE_MASK_GPIO0_L	0x40000000
+#define M1_WRITE_BYTE_MASK_GPIO2_L	0x61100000
+#define M1_WRITE_BYTE_MASK_GPIO3_H	0x03C00000
+#define M1_WRITE_BYTE_MASK_GPIO3_L	0x04000000
 
 #define CONSUMER "consumer"
 
