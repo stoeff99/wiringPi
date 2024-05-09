@@ -427,10 +427,15 @@ static int setIomuxMode (int pin, int mode)
 	bank = (bank != 0);
 	data = *(grf[bank] + regOffset);
 
-	// Common IOMUX Funtion 1 : GPIO (3'h0)
 	switch (mode) {
 	case M1_FUNC_GPIO: // Common IOMUX Function 1_GPIO (3'h0)
 		data &= ~(0x7 << ((groupOffset % 4) * 4)); // ~0x07 = 3'h0
+		data |= (0x7 << ((groupOffset % 4) * 4 + 16)); // write_mask
+		*(grf[bank] + regOffset) = data;
+		break;
+	case M1_FUNC_PWM: // gpio0_B5/B6: 3'h100 gpio0_C2: 3'h001
+		data |= (group < 2 ? (0x4 << ((groupOffset % 4) * 4)) : (0x1 << ((groupOffset % 4) * 4)));
+		data &= (group < 2 ? ~(0x3 << ((groupOffset % 4) * 4)) : ~(0x6 << ((groupOffset % 4) * 4)));
 		data |= (0x7 << ((groupOffset % 4) * 4 + 16)); // write_mask
 		*(grf[bank] + regOffset) = data;
 		break;
@@ -462,9 +467,7 @@ static int _pinMode (int pin, int mode)
 	pwmRelease(origPin);
 	softPwmStop(origPin);
 	softToneStop(origPin);
-
 	setClkState(bank, M1_CLK_ENABLE);
-	setIomuxMode(origPin, M1_FUNC_GPIO);
 
 	data = *(gpio[bank] + regOffset);
 
@@ -475,6 +478,7 @@ static int _pinMode (int pin, int mode)
 			_pullUpDnControl(origPin, mode);
 			__attribute__((fallthrough));
 		case OUTPUT:
+			setIomuxMode(origPin, M1_FUNC_GPIO);
 			mode = (mode == OUTPUT);
 			data &= ~(1 << gpioToShiftRegBy16(pin));
 			data |=(mode << gpioToShiftRegBy16(pin));
@@ -488,6 +492,7 @@ static int _pinMode (int pin, int mode)
 			softToneCreate(origPin);
 			break;
 		case PWM_OUTPUT:
+			setIomuxMode(origPin, M1_FUNC_PWM);
 			pwmSetup(origPin);
 			break;
 		default:

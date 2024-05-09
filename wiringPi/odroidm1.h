@@ -36,6 +36,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define GPIO_SIZE	32
 
 #define M1_FUNC_GPIO 0
+#define M1_FUNC_PWM 1
 
 // GPIO[0]
 #define M1_GPIO_0_BASE	0xFDD60000
