@@ -776,6 +776,7 @@ static int _getPUPD (int pin)
 			regOffset = M2_VCCIO1_4_IOC_PUPD_OFFSET;
 			break;
 		case 2:
+			regOffset = 0;
 			__attribute__((fallthrough));
 		case 3:
 			regOffset = M2_VCCIO3_5_IOC_PUPD_OFFSET;
@@ -839,6 +840,7 @@ static int _pullUpDnControl (int pin, int pud)
 			regOffset = M2_VCCIO1_4_IOC_PUPD_OFFSET;
 			break;
 		case 2:
+			regOffset = 0;
 			__attribute__((fallthrough));
 		case 3:
 			regOffset = M2_VCCIO3_5_IOC_PUPD_OFFSET;
