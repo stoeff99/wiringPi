@@ -1,4 +1,4 @@
-sbin_PROGRAMS = gpio
+bin_PROGRAMS = gpio
 
 gpio_SOURCES = \
 	gpio.c \

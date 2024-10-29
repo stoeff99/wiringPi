@@ -1,4 +1,4 @@
-sbin_PROGRAMS = wiringPiD
+bin_PROGRAMS = wiringPiD
 
 wiringPiD_SOURCES = \
 	daemonise.c \
