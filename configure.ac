@@ -20,7 +20,7 @@ AC_PROG_LN_S
 AC_PROG_RANLIB
 
 # Checks for libraries.
-PKG_CHECK_MODULES([LIBCRYPT], [libcrypt])
+#PKG_CHECK_MODULES([LIBCRYPT], [libcrypt])
 
 # Checks for header files.
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h malloc.h netdb.h netinet/in.h stdint.h stdlib.h string.h sys/ioctl.h sys/socket.h sys/time.h syslog.h termios.h unistd.h])
